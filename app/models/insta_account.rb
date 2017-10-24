@@ -1,0 +1,2 @@
+class InstaAccount < ApplicationRecord
+end

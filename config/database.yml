@@ -1,0 +1,9 @@
+development:
+  adapter: postgresql
+  database: auto_following_database
+  pool: 5
+  timeout: 5000
+  host: localhost
+  port: 5432
+  username: postgres
+  password: postgres

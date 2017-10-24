@@ -1,0 +1,2 @@
+class PartnerInstaAccount < ApplicationRecord
+end
