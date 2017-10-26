@@ -33,6 +33,8 @@ gem 'rake'
 gem 'pry'
 gem 'pg'
 gem 'watir'
+gem 'devise'
+gem 'activeadmin'
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
