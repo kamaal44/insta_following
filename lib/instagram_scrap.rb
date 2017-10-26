@@ -47,35 +47,38 @@ class InstagramScrap
   # sleep(2)
   # puts "We're in #hackerman"
 
-  def follow(browser, user)
+  def follow(browser, insta_account, partner)
+    user = insta_account.name
     # Navigate to user's page
     browser.goto "instagram.com/#{user}/"
     
     # Click Followers Button
-    browser.link(:text => /followers/).click
-    sleep(2)
-    
-    # Follow 10 users
-    puts "======================== Started Following =================="
-    partner = Partner.first
-    insta_account = InstaAccount.find_or_create_by(name: user)
-    partner_insta_account = partner.partner_insta_accounts.create(insta_account_id: insta_account.id)
+    binding.pry
 
-    10.times do
-      binding.pry
-      following_user_element = browser.div(:text => "Followers").next_sibling.buttons(:text => "Follow")[0]
-      if following_user_element.exist?
-        following_user_element.click
-        sleep(2)
-        followed_user_username = following_user_element.parent.parent.parent.text.split("\n").first
-        # puts "Followed user #{followed_user_username}"
-        following = Following.find_or_create_by(name: followed_user_username)
-        following.partner_insta_account_followings.create(partner_insta_account_id: partner_insta_account.id, followed_at: Time.now)
-      else
-        break
+    if browser.link(:text => /followers/).present?
+      browser.link(:text => /followers/).click
+      sleep(2)
+      # Follow 10 users
+      puts "======================== Started Following =================="
+      # partner = Partner.first
+      # insta_account = InstaAccount.find_or_create_by(name: user)
+      # partner_insta_account = partner.partner_insta_accounts.create(insta_account_id: insta_account.id)
+
+      10.times do
+        following_user_element = browser.div(:text => "Followers").next_sibling.buttons(:text => "Follow")[0]
+        if following_user_element.exist?
+          following_user_element.click
+          sleep(2)
+          followed_user_username = following_user_element.parent.parent.parent.text.split("\n").first
+          # puts "Followed user #{followed_user_username}"
+          following = Following.find_or_create_by(name: followed_user_username)
+          partner_insta_account = insta_account.partner_insta_accounts.where("insta_account_id = ? AND partner_id = ?", insta_account.id, partner.id).first
+          following.partner_insta_account_followings.create(partner_insta_account_id: partner_insta_account.id, followed_at: Time.now)
+        else
+          break
+        end
       end
     end
-    binding.pry
     puts "======================== Finished Following =================="
   end
 

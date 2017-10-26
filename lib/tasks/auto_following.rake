@@ -4,14 +4,14 @@ namespace :auto_following do
   
   desc "Follow on instagram"
   task follow: :environment do
-    
-    insta = InstagramScrap.new("insta_scrape", "instascrape")
-    insta.login
-
-    users = ["josephineskriver", "theweeknd", "kendalljenner", "karliekloss"]
-    insta.follow(insta.get_browser_object, users[0])
-    binding.pry
-    # insta.follow
+    Partner.all.each do |partner|
+      insta = InstagramScrap.new(partner.user_name, partner.password)
+      insta.login
+      binding.pry
+      partner.insta_accounts.each do |insta_account|
+        insta.follow(insta.get_browser_object, insta_account, partner)  
+      end
+    end
   end
 
   desc "UnFollow on instagram"
