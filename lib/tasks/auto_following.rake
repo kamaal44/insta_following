@@ -24,5 +24,4 @@ namespace :auto_following do
       end
     end
   end
-
 end
