@@ -53,7 +53,6 @@ class InstagramScrap
     browser.goto "instagram.com/#{user}/"
     
     # Click Followers Button
-    binding.pry
 
     if browser.link(:text => /followers/).present?
       browser.link(:text => /followers/).click
@@ -82,25 +81,42 @@ class InstagramScrap
     puts "======================== Finished Following =================="
   end
 
-  def unfollow(browser, user)
-    unfollow = []
-    @@database[user].select{ |value_hash| unfollow << value_hash["followed_user"] if value_hash["followed_at"] < (Time.now - (2)) }
-    puts "======================== Un-following =================="
-    #Unfollow person who has been followed one day ago.
-    unfollow.each_with_index do |follower, index|
-      sleep(2)
-      browser.goto "https://www.instagram.com/#{follower}/"
-      if browser.button(:text => "Following").exist?
-        browser.button(:text => "Following").click
-        if browser.button(:text => "Follow").exist?
-          puts "Un-followed user #{follower}"
-          @@database[user].delete_if{ |value| value["followed_user"] == follower }
+  def unfollow(browser, insta_account, partner)
+    user = insta_account.name
+    partner_insta_account = insta_account.partner_insta_accounts.where("insta_account_id = ? AND partner_id = ?", insta_account.id, partner.id).first
+    partner_insta_account.followings.each do |following|
+      partner_insta_account_following = partner_insta_account.partner_insta_account_followings.where("following_id=? AND partner_insta_account_id=?", following.id, partner_insta_account.id).first
+      if partner_insta_account_following.created_at < (DateTime.now)
+        browser.goto "https://www.instagram.com/#{following.name}/"
+        if browser.button(:text => "Following").exist?
+          browser.button(:text => "Following").click
+          sleep(2)
+          if browser.button(:text => "Follow").exist?
+            partner_insta_account_following.unfollow = true #condition needed when unfollow
+            partner_insta_account_following.save
+          end
         end
       end
-      break if (index >= 9)
     end
+
+    # unfollow = []
+    # @@database[user].select{ |value_hash| unfollow << value_hash["followed_user"] if value_hash["followed_at"] < (Time.now - (2)) }
+    #   puts "======================== Un-following =================="
+    # #Unfollow person who has been followed one day ago.
+    # unfollow.each_with_index do |follower, index|
+    #   sleep(2)
+    #   browser.goto "https://www.instagram.com/#{follower}/"
+      # if browser.button(:text => "Following").exist?
+      #   browser.button(:text => "Following").click
+      #   if browser.button(:text => "Follow").exist?
+      #     puts "Un-followed user #{follower}"
+      #     @@database[user].delete_if{ |value| value["followed_user"] == follower }
+      #   end
+      # end
+    #   break if (index >= 9)
+    # end
     puts "======================== Finished Un-following =================="
-    sleep(10) # Sleep 15 minutes (900 seconds)
+    # sleep(10) # Sleep 15 minutes (900 seconds)
   end
 
   # Continuous loop to run until you've unfollowed the max people for the day
