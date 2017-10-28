@@ -33,6 +33,7 @@ gem 'rake'
 gem 'pry'
 gem 'pg'
 gem 'watir'
+gem 'headless'
 gem 'devise'
 gem 'activeadmin'
 

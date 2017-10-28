@@ -1,10 +1,13 @@
 require 'watir' # Crawler
 require 'pry' # Ruby REPL
+require 'headless'
 
 class InstagramScrap
   
   def initialize(username, password)
     @username, @password = username, password
+    headless = Headless.new
+    headless.start
     @browser = Watir::Browser.new :chrome
   end
 
@@ -32,18 +35,19 @@ class InstagramScrap
     user = insta_account.name
     # Navigate to user's page
     browser.goto "instagram.com/#{user}/"    
-    
     if browser.link(:text => /followers/).present?
       browser.link(:text => /followers/).click
       sleep(2)
-      puts "======================== Started Following =================="
+      puts "======================== Started Following For #{user}=================="
       # Follow 10 users
       10.times do
         following_user_element = browser.div(:text => "Followers").next_sibling.buttons(:text => "Follow")[0]
         if following_user_element.exist?
           following_user_element.click
+
           sleep(2)
           followed_user_username = following_user_element.parent.parent.parent.text.split("\n").first
+          puts "#{followed_user_username} instagram user followed by #{partner.user_name}."
           following = Following.find_or_create_by(name: followed_user_username)
           partner_insta_account = insta_account.partner_insta_accounts.where("insta_account_id = ? AND partner_id = ?", insta_account.id, partner.id).first
           following.partner_insta_account_followings.create(partner_insta_account_id: partner_insta_account.id, followed_at: Time.now)
@@ -52,7 +56,7 @@ class InstagramScrap
         end
       end
     end
-    puts "======================== Finished Following =================="
+    puts "======================== Finished Following for #{user}=================="
   end
 
   def unfollow(browser, insta_account, partner)
@@ -66,12 +70,13 @@ class InstagramScrap
           browser.button(:text => "Following").click
           sleep(2)
           if browser.button(:text => "Follow").exist?
+            puts "#{following.name} instagram user Un-followed by #{partner.user_name}."
             partner_insta_account_following.unfollow = true
             partner_insta_account_following.save
           end
         end
       end
     end
-    puts "======================== Finished Un-following =================="
+    puts "======================== Finished Un-following for #{user} =================="
   end
 end
