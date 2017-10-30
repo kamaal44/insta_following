@@ -9,8 +9,8 @@ class InstagramScrap
   end
 
   def self.set_browser_object
-    headless = Headless.new
-    headless.start
+    # headless = Headless.new
+    # headless.start
     @@browser = Watir::Browser.new :chrome
   end
 
