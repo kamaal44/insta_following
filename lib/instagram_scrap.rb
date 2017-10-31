@@ -9,8 +9,8 @@ class InstagramScrap
   end
 
   def self.set_browser_object
-    headless = Headless.new
-    headless.start
+    # headless = Headless.new
+    # headless.start
     @@browser = Watir::Browser.new :chrome
   end
 
@@ -35,16 +35,22 @@ class InstagramScrap
       sleep(2)
       puts "======================== Started Following For #{user}=================="
       # Follow 10 users
-      2.times do
-        following_user_element = browser.div(:text => "Followers").next_sibling.buttons(:text => "Follow")[0]
+      count = 0
+      5.times do
+        following_user_element = browser.div(:text => "Followers").next_sibling.buttons(:text => "Follow")[count]
         if following_user_element.exist?
-          following_user_element.click
-          sleep(2)
           followed_user_username = following_user_element.parent.parent.parent.text.split("\n").first
-          puts "#{followed_user_username} instagram user followed by #{partner.name}."
+          
           following = Following.find_or_create_by(name: followed_user_username)
           partner_insta_account = insta_account.partner_insta_accounts.where("insta_account_id = ? AND partner_id = ?", insta_account.id, partner.id).first
-          following.partner_insta_account_followings.create(partner_insta_account_id: partner_insta_account.id, followed_at: Time.now)
+          unless following.partner_insta_account_followings.find_by(partner_insta_account_id: partner_insta_account.id).present?
+            following_user_element.click
+            sleep(2)
+            puts "#{followed_user_username} instagram user followed by #{partner.name}."
+            following.partner_insta_account_followings.create(partner_insta_account_id: partner_insta_account.id, followed_at: Time.now)
+          else
+            count = count + 1
+          end
         else
           break
         end
@@ -55,6 +61,7 @@ class InstagramScrap
 
   def logout(browser, partner)
     browser.goto("https://www.instagram.com/#{partner.name}")
+    sleep(2)
     browser.button(:text => "Options").click
     browser.button(:text => "Log Out").click
     puts "Voila Logout successful!!"
