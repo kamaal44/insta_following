@@ -37,6 +37,8 @@ gem 'watir-scroll'
 gem 'headless'
 gem 'devise'
 gem 'activeadmin'
+gem 'sidekiq'
+gem 'sinatra', require: false
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
