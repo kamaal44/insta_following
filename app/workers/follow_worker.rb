@@ -3,15 +3,18 @@ class FollowWorker
   include Sidekiq::Worker
 
   def perform
-    browser = InstagramScrap.set_browser_object()
-    loop do 
+    # browser = InstagramScrap.set_browser_object()
+    100.times do 
       Partner.all.each do |partner|
+        
         insta = InstagramScrap.new(partner.name, partner.password)
         insta.login
         partner.insta_accounts.each do |insta_account|
-          insta.follow(InstagramScrap.get_browser_object, insta_account, partner)
+          insta.follow(insta.browser, insta_account, partner)
         end
-        insta.logout(InstagramScrap.get_browser_object, partner)
+        insta.logout(insta.browser, partner)
+        sleep(3)
+        insta.browser.close
       end
     end
   end

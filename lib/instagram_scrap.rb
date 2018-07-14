@@ -3,26 +3,27 @@ require 'pry' # Ruby REPL
 require 'headless'
 
 class InstagramScrap
-  
+  attr_reader :browser, :username, :password
   def initialize(username, password)
     @username, @password = username, password
+    @browser = Watir::Browser.new :chrome
   end
 
-  def self.set_browser_object
-    headless = Headless.new
-    headless.start
-    @@browser = Watir::Browser.new :chrome
-  end
+  # def self.set_browser_object
+    # headless = Headless.new
+    # headless.start
+    # @browser = Watir::Browser.new :chrome
+  # end
 
-  def self.get_browser_object
-    @@browser
-  end
+  # def self.get_browser_object
+  #   @browser
+  # end
 
   def login
-    @@browser.goto "instagram.com/accounts/login/"
-    @@browser.text_field(:name => "username").set "#{@username}"
-    @@browser.text_field(:name => "password").set "#{@password}"
-    @@browser.button(:text => 'Log in').click
+    @browser.goto "instagram.com/accounts/login/"
+    @browser.text_field(:name => "username").set "#{@username}"
+    @browser.text_field(:name => "password").set "#{@password}"
+    @browser.button(:text => 'Log in').click
     sleep(2)
   end
 
@@ -72,7 +73,7 @@ class InstagramScrap
     partner_insta_account = insta_account.partner_insta_accounts.where("insta_account_id = ? AND partner_id = ?", insta_account.id, partner.id).first
     partner_insta_account.followings.each do |following|
       partner_insta_account_following = partner_insta_account.partner_insta_account_followings.where("following_id=? AND partner_insta_account_id=?", following.id, partner_insta_account.id).first
-      if partner_insta_account_following.created_at < (DateTime.now)
+      if partner_insta_account_following.created_at < (DateTime.now) && partner_insta_account_following.unfollow == false
         browser.goto "https://www.instagram.com/#{following.name}/"
         if browser.button(:text => "Following").exist?
           browser.button(:text => "Following").click
